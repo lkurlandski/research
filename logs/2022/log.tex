@@ -1,0 +1,346 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{pdfpages}
+\usepackage{booktabs}
+\usepackage{xcolor,colortbl}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+}
+
+\usepackage{fullpage}
+\usepackage{times}
+\usepackage{fancyhdr,graphicx,amsmath,amssymb}
+\usepackage[ruled,vlined]{algorithm2e}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Weekly Log}
+\author{Luke Kurlandski}
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{W1: 08/21/2022}
+
+\subsection*{Notes}
+
+\begin{itemize}
+\item There are limited examples of applying LMs specifically to malware. Found no examples of using a highly advanced transformer-based architecture, such as BERT.
+\item Could possibly train a code LM specifically on malware, e.g., MalBERT or MalELECTRA.
+\item Malware generation using seq2seq? Malware obfuscation using code-repair techniques?
+\item Several works use word2vec, RNNs, LSTMs for language modeling malware, but there is no one paper that uses all three on the same dataset for a holistic comparison. Furthermore, most of these datasets are not publicly available.
+\item No paper has used the AST approach taken by Uri Alon et al. specifially for malware
+\item Perhaps use a large language model of code after decomposition, such as PolyCoder, for the classification? Or would this not work because the decompiled malware would not have useful identifiers? Would it work if ASTs were used to train the LM?
+\item Is there a BERT for Assembly language? If so, that could be an excellent LM for malware.
+\end{itemize}
+
+\subsection*{Report}
+
+\begin{itemize}
+\item Reading about malware detection and classification
+\item At this point I'm probably more comfortable/qualified with static malware detection than dynamic detection
+\item The research in using language modeling techniques on malware is fairly new and undeveloped
+\item Many papers doing this do not compare their methods to any baseline method
+\item Many do not use publicly available datasets
+\item Ideal dataset for this research is probably Sophos-ReversingLabs 20 Million dataset
+\end{itemize}
+
+\subsection*{Minutes}
+
+\begin{itemize}
+\item This week I will work on replicating some of the experimental results produced in other papers
+\end{itemize}
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{W2: 08/27/22}
+
+\subsection*{Onboarding Meeting}
+
+\begin{itemize}
+	\item Dr. Pan, Dr. Wright, and I will meet during the Malware Group meeting time, during the reading group when I am presenting, and as needed.
+	\item The RPA is essentially a short research paper with a robust literature review. 
+	\item I should begin preparation for it immediately. 
+	\begin{itemize}
+		\item See rubrics on RIT site.
+		\item Could focus on a particular type of malware detection, such as Windows macro malware, PDF malware or more general malware detection.
+		\item Could look into generating adversarial malware examples, along the lines of code2vec.
+	\end{itemize}
+	\item ``binary lifting'' from binary to intermediate (similar to assembly, which could be recompiled again)
+	\item Goal is for second half of semester to have a solid objective for research
+	\item Innovation: if its been done ten times, its not innovative enough
+	\item Read other students' RPAs
+\end{itemize}
+
+\subsection*{Notes}
+
+\begin{itemize}
+	\item Adversarial malware: generate embeddings for malware opcode and substitute to fool the detector
+	\item Little research done on poisoning attacks
+\end{itemize}
+
+\subsection*{Report}
+
+\begin{itemize}
+	\item Read about adversarial malware generation and defense.
+	\item Most literature is concerned with adapting CV methods that use continuous representations to malware with discrete representations.
+	\item Might be novel to explore adversarial malware with continuous representations, i.e., malware represented using a learned embedding.
+	\item Adversarially modifying the embedding would be simple, but figuring out how that can be achieved by modifying the malware itself would be challenging.
+	\item Look into NLP/CV/audio processing adversarial techniques that use embeddings.
+	\item Dr. Pan suggested and idea of swapping malware API calls with similar calls as an adversarial approach.
+	\item If using embeddings as a feature representation this would fit into that idea nicely.
+\end{itemize}
+
+\subsection*{Minutes}
+
+\begin{itemize}
+	\item Develop a plan for the semester
+\end{itemize}
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{W3: 09/02/2022}
+
+\subsection*{Notes}
+
+\begin{itemize}
+	\item Would using LM techniques in malware detection make them robust to adversarial attacks?
+	\item Idea: build a [novel?] LM-based classifier, demonstrate its robustness to adversarial attacks, propose a new adversarial attack based upon NLP techniques!!!! Preferably use windows, android, and PDF datasets
+	\item AST for assembly code probably not logical, but would it even be needed?
+	\item Diverse ensembles more robust to adversarial attacks?
+	\item Could be interesting to train an ensemble using dramatically different feature reps, then test an RL, GAN, Graph, and traditional Adversarial malware attacks
+	\item Research on attacks should be focused on the black box problem space scenario.
+	\item Identify problematic sequences of opcode and replace them with computationally equivalent ones to fool detector?
+	\item Adversarial Malware needs to be verified for correctness in Cuckoo Sandbox
+	\item An adversarial attack designed specifically for ensembles?
+	\item Adversarial training works...but is there a point where retraining fails?
+	\item Have RL, genetic, or GAN attacks been tested against ensembles? One paper tested various attacks against a small ensemble, but what about a large one? IE test black box attacks against ensembles, possibly that use different feature reps.
+	\item Test ensembles using different feature rep vs ensembles using the same feature rep
+	\item Read every source that uses black box attacks in the feature space. Determine whether or not their methods use reasonable defense mechanisms. Test their methods using reasonable defense mechanisms.
+	\item Does the surrogate model negate the black box model entirely? Are all black box attacks really white box?
+	\item Testing adversarial techniques against AV software would be more practical than just testing against a single DNN
+	\item Idea: adversarial testing against an ensemble of AV softwares, like VirusTotal
+\end{itemize}
+
+\subsection*{Report}
+
+\begin{itemize}
+	\item Read more about adversarial malware evasion attacks
+	\item Observed that many attacks assume unrealistic knowledge about the classification system or are ineffective at or incapable of producing functioning adversarial examples
+	\item Existing black box, practical adversarial evasion attacks generally use ``easy'' classifiers
+	\item Interesting to see how their techniques hold up against a more realistic defender, like an ensemble or a commercial AV product
+\end{itemize}
+
+\subsection*{Minutes}
+
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{W4: 09/12/22 - 09/19/22}
+
+\subsection*{General}
+\begin{itemize}
+	\item Concerning swapping blocks of suspicious code with less suspicious but equivalent alternatives, the AST approach might be useful because it represents the actual functionality of the code and code produce code that functions the same, but uses weird sequences of tokens.
+	\item Could use code2seq to take assembly to language, then use codex to take language to assembly to get non deterministic outputs
+	\item Interesting paper that uses trains GPT2 on malware bytecode
+	\item Perhaps a code generation tool like codex could repeatedly nondeterministically mask and substitute chunks of assembly for adversarial evasion
+	\item Use codex to modify the source code of malware
+	\item Large scale ``instruction substitution'' in poisoning attacks?
+	\item Using code generation techniques to change the important code itself is an extremely challenging problem. Several methods use various strategies to append some form of bytes into sections of the code. We could use code generation techniques to insert logically functional code blocks into the malware. At that point though, we might as well just copy and paste assembly from a specific source. 
+	\item Could use code generation to write C code, then compile it, and insert the compiled code into the malware. Use genetic or RL algorithms to find where to insert it, or simply insert it behind a if-false statement.
+	\item Code summarization of a portion of assembly code via code2vec or something like it. Then code generation from the summary back into assembly.
+	\item To create a labeled assembly language, compile C code and use function names as labels.
+	\item Shellcode\_IA32 has some code generation with codeBERT
+	\item PalmTree is a really effective embedding setup
+	\item Potentially use the function boundary identification to identify functions to swap
+	\item Perform seq2seq learning trying to make the frequency of opcodes match that of goodware. Evaluate upon unit tests for C code.
+\end{itemize}
+
+\subsection*{Malware Group}
+\subsubsection*{Report}
+\begin{itemize}
+	\item Interested in Adversarial Malware Evasion Attacks
+\end{itemize}
+\subsubsection*{Minutes}
+\begin{itemize}
+	\item Code generation techniques to produce adversarial examples, eg, code2vec/code2seq on assembly
+	\item Would have to generate code that functions, but doesn't appear malicious.
+	\item Oakland paper Saidur shared in the Slack group
+	\item Android research might be more promising than PE research
+	\item Benign Android data is easier to attain
+	\item AndroidZoo is a widely used dataset
+	\item Dr. Pan will send out some papers
+\end{itemize}
+
+\subsection*{Reading Group}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Weekly Scrum}
+\subsubsection*{Report}
+\begin{itemize}
+	\item Looking into using LLMs for adversarial malware generation
+	\item Hard problem and not exactly sure what directions to focus on
+	\item The start would be with a language model at the assembly or binary level
+	\item The state-of-the-art seems to be PalmTree (Pre-trained Assembly Language Model for InsTRuction EmbEdding), which uses a BERT architecture with different training tasks adopted for code
+	\item This gives us really good embeddings for assembly instructions
+	\item BERT has been adopted for sequence tasks in natural language and in code tooling, so there could be some extensions made to PalmTree to get interesting things going at the assembly level
+	\item Took a little bit of wandering to find PalmTree and other binary analysis tools
+	\item This weekend, will develop more concrete ideas and write up that abstract
+\end{itemize}
+\subsubsection*{Minutes}
+\begin{itemize}
+	\item Injecting code underneath if false blocks probably not a good direction to take
+	\item Probably need to perform some kind of function segmentation
+\end{itemize}
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{W5: 09/12/22 - 09/19/22}
+
+\subsection*{General}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Malware Group}
+\subsubsection*{Report}
+\begin{itemize}
+	\item 
+\end{itemize}
+\subsubsection*{Minutes}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Reading Group}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Weekly Scrum}
+\subsubsection*{Report}
+\begin{itemize}
+	\item 
+\end{itemize}
+\subsubsection*{Minutes}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{W6: 09/12/22 - 09/19/22}
+
+\subsection*{General}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Malware Group}
+\subsubsection*{Report}
+\begin{itemize}
+	\item 
+\end{itemize}
+\subsubsection*{Minutes}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Reading Group}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Weekly Scrum}
+\subsubsection*{Report}
+\begin{itemize}
+	\item 
+\end{itemize}
+\subsubsection*{Minutes}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{WN: XX/XX/XX - XX/XX/XX}
+
+\subsection*{General}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Malware Group}
+\subsubsection*{Report}
+\begin{itemize}
+	\item 
+\end{itemize}
+\subsubsection*{Minutes}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Reading Group}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\subsection*{Weekly Scrum}
+\subsubsection*{Report}
+\begin{itemize}
+	\item 
+\end{itemize}
+\subsubsection*{Minutes}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

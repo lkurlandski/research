@@ -1,0 +1,89 @@
+\documentclass[conference]{IEEEtran}
+%%%% New Version: 10/25/2021 1:00am MB
+\usepackage{cite}
+\usepackage{graphicx}
+\graphicspath{}
+\usepackage{multirow}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{url}
+\usepackage{censor}
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+\makeatletter
+\def\endthebibliography{%
+	\def\@noitemerr{\@latex@warning{Empty `thebibliography' environment}}%
+	\endlist
+}
+\makeatother
+
+\begin{document}
+
+\title{Evading Malware Detection with Assembly-Level Code Generation}
+
+%\author{
+%\IEEEauthorblockN{Luke Kurlandski}
+%\IEEEauthorblockA{Golisano College of Computing and Information Sciences\\
+%Rochester Institute of Technology\\
+%1 Lomb Memorial Dr, Rochester, NY 14623\\
+%Email: \censor{lk3591}@g.rit.edu}
+%}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+
+\end{abstract}
+
+\IEEEpeerreviewmaketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Background}
+\label{sec:Background}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The arms race between malware and the detection of malware is an ongoing struggle. Machine learning (ML) and deep learning (DL) detection systems have been shown to be an effective tool to identify malicious software statically, e.g., the DREBIN \cite{arp2014drebin}, MalConv \cite{raff2018malware} and EMBER \cite{anderson2018ember} detectors. While able to perform well on unseen examples, these models are vulnerable to adversarial evasion attacks, when an adversary perturbs an input such that the classifier fails to correctly identify it \cite{szegedy2013intriguing}. In the case of a practical adversarial malware evasion attack, the adversary modifies the malware binary such that it maintains the correct format, is executable, and preserves its malicious functionality \cite{ling2021adversarial}. It is important to discover the ways adversaries with ill intentions can conduct these attacks. To this end, the cybersecurity community has invested a great deal of effort to develop adversarial attacks \cite{maiorca2019towards, park2020survey, li2021arms, ling2021adversarial}. Proposing such attacks allows researchers to devise countermeasures to defend against them \cite{li2021framework}.
+
+Meanwhile, in the late 2010s, the field of natural language processing (NLP) was revolutionized by two important advances: the Transformer architecture for sequence processing \cite{vaswani2017attention} and task agnostic pre-training of large language models (LLMs) like ELMo \cite{peters2018deep} prior to task-specific fine-tuning. These advances resulted in a series of models that achieved state of the art performance at a variety of NLP tasks, e.g., GPT \cite{radford2018improving} and BERT \cite{ devlin2018bert}, along with methods to use multiple LLMs in same model architecture to expand their capabilities \cite{rothe2020leveraging}. Since source code and natural language contain structural similarities, researchers applied these new strategies to tasks like automatic code documentation, e.g., CodeBERT \cite{feng2020codebert}, code generation, e.g., codex \cite{chen2021evaluating}, and transcompilation \cite{roziere2020unsupervised}. Most of the research related to source code has been done for high-level languages like Python since there is more demand for code tools in these languages. 
+
+Recently, these advances have been applied to improve low level source code representations. Finding an effective representation for code at this level has long been a challenge. An effective representation of machine code is useful for a variety of applications, such as binary code similarity detection \cite{xu2017neural}, function type signatures inference \cite{chua2017neural}, value set analysis \cite{guo2019deepvsa}, and malware detection at the byte-level \cite{raff2018malware, raff2021classifying}. Previous works used simple raw byte encodings \cite{guo2019deepvsa} or assembly-level encodings \cite{xu2017neural}, neither of which can provide rich semantic knowledge about the meaning of the instructions. \cite{li2021palmtree} and \cite{artuso2022binbert} respectively introduced PalmTree and BinBERT, LLMs for assembly code based on the BERT \cite{devlin2018bert} architecture and unsupervised pre-training paradigm. \cite{liguori2022can} adopted the methodology from \cite{feng2020codebert} to generate assembly code from natural language descriptions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Proposal}
+\label{sec:Proposal}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+In this work, we propose a novel adversarial evasion attack to evade malware classifiers. Our attack identifies suspicious sections of executable code within the binary and substitutes them with semantically equivalent code that appears harmless. Unlike previous works which proposed a rule-based substitution strategy to modify the opcode distribution of malware, we use a novel sequence to sequence (seq2seq) model to make large portions of malicious code appear benign. Our model uses an encoder-decoder architecture to perform the sequence mapping. We use PalmTree as an encoder and GPT as a decoder. Prior to conjoining the encoder and decoder, each component is pre-trained in an unsupervised fashion on assembly level code. 
+
+We include two state of the art detection models when we evaluate the efficacy of our attack: MalConv and EMBER. Since our method only modifies the code of the malware, we develop a third classifier that only examines the source code itself when making its classification. Previous works suggest that malware classifiers likely pay more attention to the header and metadata portions of malware than the source code itself \cite{}. Therefore, we argue that our method should be used in conjunction with a different adversarial attack, one that has a mechanism to manipulate the header and metadata of the malware. To test this hypothesis, we introduce a second evasion attack, test it against all three of our classifiers, and demonstrate that the evasion rate of the two attacks combined is higher than the evasion rate of either attack in isolation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Discussion}
+\label{sec:Discussion}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{What I am confident about}
+
+Previous work suggests that the proposed model architecture could be effective. Unsupervised pre-training of the encoder and decoder should be feasible using training objectives discussed in previous works. Gathering binary source code and dissassembling it to create and unlabeled dataset for pre-training should prove simple. Finally, setting up the experiment involving different malware classifiers and different evasion attacks should also be feasible. Whether or not the results will be positive remains to be seen.
+
+\subsection{What will be challenging}
+
+What will be a challenge is determining what makes a block of malware code appear suspicious and what makes it appear benign. Taking these concepts and turning it into a training objective to actually perform the sequence-to-sequence training will also be challenging. Gathering data for this task might also be difficult. To overcome these challenges, I need to read more about seq2seq models, machine translation, and transcompilation, and unsupervised learning methods for performing these tasks. I also need to read more about malware and perhaps explainability to figure out properties of malware vs benignware.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{./IEEEtran}
+\bibliography{paper}
+
+\end{document}
