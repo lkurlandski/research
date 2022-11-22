@@ -1,0 +1,16 @@
+\begin{thebibliography}{1}
+
+\bibitem{coull2019activation}
+Scott~E Coull and Christopher Gardner.
+\newblock Activation analysis of a byte-based deep neural network for malware
+  classification.
+\newblock In {\em 2019 IEEE Security and Privacy Workshops (SPW)}, pages
+  21--27. IEEE, 2019.
+
+\bibitem{roziere2021leveraging}
+Baptiste Roziere, Jie~M Zhang, Francois Charton, Mark Harman, Gabriel Synnaeve,
+  and Guillaume Lample.
+\newblock Leveraging automated unit tests for unsupervised code translation.
+\newblock {\em arXiv preprint arXiv:2110.06773}, 2021.
+
+\end{thebibliography}

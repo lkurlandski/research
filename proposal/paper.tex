@@ -1,0 +1,117 @@
+\documentclass[conference]{IEEEtran}
+%%%% New Version: 10/25/2021 1:00am MB
+\usepackage{cite}
+\usepackage{graphicx}
+\graphicspath{}
+\usepackage{multirow}
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+
+\makeatletter
+\def\endthebibliography{%
+	\def\@noitemerr{\@latex@warning{Empty `thebibliography' environment}}%
+	\endlist
+}
+\makeatother
+
+\begin{document}
+
+%\title{Evading Malware Detection with Assembly-Level Code Generation}
+\title{An Adversarial Malware Evasion Attack using Neural Machine Translation}
+
+%\author{
+%\IEEEauthorblockN{Luke Kurlandski}
+%\IEEEauthorblockA{Golisano College of Computing and Information Sciences\\
+%Rochester Institute of Technology\\
+%1 Lomb Memorial Dr, Rochester, NY 14623\\
+%Email: \censor{lk3591}@g.rit.edu}
+%}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+	In recent decades, malware has become a significant problem for an increasingly digitized society. Amidst the explosion of machine learning (ML) and deep learning (DL), feasible malware detection at scale has become more effective than ever. However, ML and DL systems are notoriously vulnerable to adversarial attacks. In the case of an adversarial evasion attack against a malware detection system, an adversary would carefully perturb an executable such that it maintains its malicious functionality, but is able to evade the classifier. To understand this class of threats before malicious actors do, the cybersecurity community has made a significant effort to develop techniques to craft adversarial malware. By doing this, security experts can design defense protocols against adversarial attacks and hope to remain one step ahead of adversaries. In our work, we propose a novel adversarial evasion attack that operates by directly modifying the source code of malicious software. We believe that we can identify pieces of code within malware that detection systems find suspicious using DL explainability theory. We then intend to substitute these suspicious sections of code with semantically equivalent code that appears benign. To perform the replacement, we propose a sequence-to-sequence model based upon large-language-modeling (LLM) for assembly-level code. We argue that our attack can be conjoined with any other adversarial attack to result in a more powerful attack with an improved evasion rate. We propose a thorough experiment to evaluate the effectiveness of our attack against a variety of hardened detection systems.
+\end{abstract}
+
+\IEEEpeerreviewmaketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Background}
+\label{sec:Background}
+
+The arms race between malware and the detection of malware is an ongoing struggle. Machine learning (ML) and deep learning (DL) detection systems have been shown to be an effective tool to identify malicious software statically, e.g., the DREBIN \cite{arp2014drebin}, MalConv \cite{raff2018malware} and EMBER \cite{anderson2018ember} detectors. While able to perform well on unseen examples, these models are vulnerable to adversarial evasion attacks \cite{szegedy2013intriguing}. In the case of a practical adversarial malware evasion attack, the adversary modifies the malware binary such that it maintains the correct format, is executable, preserves its malicious functionality \cite{ling2021adversarial}, yet cannot be identified by the detection model. It is important to discover the ways adversaries with ill intentions can conduct these attacks. To this end, the cybersecurity community has invested a great deal of effort to develop adversarial attacks \cite{maiorca2019towards, park2020survey, li2021arms, ling2021adversarial}. Proposing such attacks allows researchers to devise countermeasures to defend against them \cite{li2021framework}.
+
+Meanwhile, in the late 2010s, the field of natural language processing (NLP) was revolutionized by two important advances: the Transformer architecture for sequence processing \cite{vaswani2017attention} and task agnostic pre-training of large language models (LLMs) like ELMo \cite{peters2018deep} prior to task specific fine-tuning. These advances resulted in a series of models that achieved state of the art performance at a variety of NLP tasks, e.g., GPT \cite{radford2018improving} and BERT \cite{devlin2018bert}. Since source code and natural language contain structural similarities, researchers applied these new strategies to tasks like automatic code documentation, e.g., CodeBERT \cite{feng2020codebert}, code generation, e.g., codex \cite{chen2021evaluating}, and transcompilation \cite{roziere2020unsupervised}. Most of the research related to source code has been done for high-level languages like Python since there is more demand for code tools in these languages. 
+
+Recently, these advances have been applied to improve low level source code representations. Finding an effective representation for code at this level has long been a challenge. An effective representation of machine code is useful for a variety of applications, such as binary code similarity detection \cite{xu2017neural}, function type signatures inference \cite{chua2017neural}, value set analysis \cite{guo2019deepvsa}, and malware detection from raw bytes \cite{raff2018malware, raff2021classifying}. Previous works have used simple raw byte encodings \cite{guo2019deepvsa} or assembly-level encodings \cite{xu2017neural}, neither of which can provide rich semantic knowledge about the meaning of the instructions. To achieve representations that do provide a more sophisticated understanding of the instructions, researchers have begun to start using LLMs from NLP. \cite{li2021palmtree} and \cite{artuso2022binbert} respectively introduced PalmTree and BinBERT, LLMs for assembly code based on the BERT \cite{devlin2018bert} architecture and unsupervised pre-training paradigm. \cite{liguori2022can} adopted the CodeBERT from \cite{feng2020codebert} to generate assembly code from natural language descriptions.
+
+\section{Proposal}
+\label{sec:Proposal}
+
+In this work, we propose a novel adversarial evasion attack to evade raw byte malware classifiers. Our attack uses explainability to identify suspicious sections of executable code within the binary and substitutes them with semantically equivalent code that appears harmless. To perform the substitutions, we propose two sequence to sequence (seq2seq) models based on techniques from NLP. We evaluate our attack on several malware detection systems and compare it with other adversarial attacks. Since our attack only modifies the code portion of malware, we argue that it should be used in conjunction with a complementary attack that modifies the headers and metadata of malware. 
+
+The remainder of this proposal is organized as follows: section \ref{sec:Proposal:Model} describes our proposed models to perform the substitution, section \ref{sec:Proposal:Identification} describes how we identify which sections of malware a detector flags as suspicious, section \ref{sec:Proposal:Dataset} describes our process to gather data for training our models, section \ref{sec:Proposal:Attack} describes how we launch our attack, section \ref{sec:Proposal:Experiment} describes our experiments, and section \ref{sec:Proposal:Discussion} evaluates our approach as a whole.
+
+\subsection{Model Architectures}
+\label{sec:Proposal:Model}
+
+Our first model is based upon unsupervised neural machine translation (NMT) models. Supervised NMT generally requires substantial parallel training corpora to learn high-performing models, which has been an ongoing challenge in this field \cite{guzman2019flores}. Since such corpora are often unavailable and expensive to create, a variety of unsupervised techniques have been used to perform translation with only monolingual corpora. Many of the most successful NMT techniques rely on two training objectives. First, denoising auto encoding (DAE) \cite{vincent2010stacked} is used as a form of language modeling to teach the model the structure of language. DAE adds noise to source examples, from which the model attempts to reconstruct the original source input. Second, backtranslation \cite{sennrich2015improving} is used to actually translate between a source and target language. Backtranslation trains a target-to-source model in conjunction with the primary source-to-target model. The target-to-source model generates noisy source examples, from which the source-to-target model attempts to construct the target from. As an alternative to backtranslation, so-called ``on-the-fly'' backtranslation has been proposed as a learning objective that forgoes the target-to-source model entirely \cite{lample2017unsupervised, artetxe2017unsupervised}. This training objective uses the source-to-target model from the previous epoch to generate noisy target predictions, then tasks the model to reconstruct the source from the target predictions. Recently, the TransCoder model, built on DAE and backtranslation, has been used to translate code from one language to another in a completely unsupervised fashion \cite{roziere2020unsupervised, roziere2021dobf, roziere2021leveraging}. We experiment with several TransCoder-inspired architectures using these different variations of the backtranslation training objectives in our model development. 
+
+Our second model uses a more creative approach to perform the substitution, namely, it frames the substitution as a dual summarization/generation task, rather than a translation task. First, a code summarization model creates precise natural language (NL) descriptions from input code. Second, a code generation model takes NL descriptions and generates code from them. To ensure the code it produces appears benign, our generation model is trained to match the statistical properties of benign executables, discussed in \ref{sec:Proposal:Identification}. This model is supported by the related work from \cite{ahmad2022summarize} and \cite{liguori2022can}. Although they used the technique as part of backtranslation within a broader NMT framework, \cite{ahmad2022summarize} demonstrated that a dual code summarization/generation model could help translate between Java and Python code. \cite{liguori2022can} demonstrated that assembly code could be generated from NL. To our knowledge there has not been any research that summarizes assembly level source code, so our assembly code summarization model based on \{FIXME: citation please!\} is the first of its kind. We pair this with a code generation model similar to \cite{liguori2022can} based on CodeBERT \cite{feng2020codebert} to complete the code-to-NL-to-code pipeline.  
+
+By incorporating nondeterminism into each model, we can generate multiple candidate substitutions for any given input. This gives us many possible options for substitution, thereby improving our chances that one of them will successfully deceive the classifier. Previous works using code translation and generation generally deal with shorter sequences \{FIXME: citation please!\}, which makes standard sequence processing architectures feasible. Our models are expected to handle long sequences of assembly level code, which is much less concise than typical programming languages like Python, Java, or C. For this reason, we use the Reformer \cite{kitaev2020reformer}, a Transformer architecture shown to be successful at processing sequences of up to 64,000 units, for processing our sequences.
+
+\subsection{Identification and Explainability}
+\label{sec:Proposal:Identification}
+
+To identify which parts of a malware executable are most influential to the classifier, we monitor the magnitude of the classifier's gradients as was done in \cite{coull2019activation, demetrio2019explaining, bose2020explaining}. In \cite{bose2020explaining}, the authors found that the header and metadata of PE malware was most influential in the classifiers decision, while \cite{demetrio2019explaining} found that the classifier made its decision based upon all parts of a PE file. In our work, we seek to clarify this discrepancy in the literature. Although we can identify what code within the malware appears malicious to the classifier, we still need a qualitative understanding of what makes this code appear malicious to train our second proposed model. Several works have shown that opcode frequencies can be indicative of malicious software \cite{yewale2016malware, kucuk2020deceiving, li2020adversarial}. This is admittedly a weak qualitative understanding of what makes individual chunks of code appear suspicious, but we leave developing a deeper understanding for future work.
+
+\subsection{Creating Datasets}
+\label{sec:Proposal:Dataset}
+
+To train our first model, we need to construct two monolingual corpora of malicious and benign code snippets. We begin with a labeled dataset of malicious and benign executables. We propose two methods to build our corpora. The first (method 1) naively builds the malicious corpora from the malicious executables only and the benign corpora from the benign executables only. First, the executables are disassembled into an intermediate representation. Next, we extract only the portions of the executable containing the code itself. Finally, we use a sliding-window approach to generate fixed-size snippets of code. We aggressively oversample by using multiple window sizes of different powers of 2. The second (method 2) does not use the class labels of the executables themselves when building the corpora. Instead, it uses the raw byte classifier targeted to attack to decide which chunks of code should belong in the malicious corpora vs the benign corpora. Chunks of code the classifier finds suspicious are placed in the malicious corpora, while chunks of code the classifier does not find suspicious are placed in the benign corpora. Both of these methods result in the two desired monolingual corpora of malicious and benign code snippets. 
+
+Our second model relies on the statistical properties of malicious vs benign source code, which we derive from the malicious and benign corpora created to train the translation model. Unlike the NMT-based model, this model takes a supervised learning approach and requires labeled data of assembly code and corresponding natural language descriptions. \{FIXME: develop this idea\}. 
+
+\subsection{Attack Strategy}
+\label{sec:Proposal:Attack}
+
+Once we have a model that can modify malicious source to make it appear benign, we can use it to launch a white-box adversarial attack. We propose an attack designed against raw byte CNN classifiers, since existing works demonstrate how to analyze these models to determine what regions of the malware they find most suspicious. Theoretically, variations our attack could be used against any classifier as long as specific portions of the malware's code can be identified as being significant to the classifier's decision. Our attack works quite simply. We use the explainability methods described in section \ref{sec:Proposal:Identification} to identify and rank regions of the malware code most suitable for substitution. Then, using the model described in \ref{sec:Proposal:Model}, we continually substitute these regions until the adversarial example is labeled as benign.
+
+\subsection{Experiment}
+\label{sec:Proposal:Experiment}
+
+When evaluating our adversarial attack, we seek to answer the following questions:
+\begin{itemize}
+	\item RQ1: How well does our attack perform against a specific classifier in a white-box scenario?
+	\item RQ2: Will the adversarial examples generated in an attempt to evade one classifier evade a radically different type of classifier?
+	\item RQ3: Is our attack more effective against classifiers that are restricted to learning from only the code portions of malware?
+	\item RQ4: Does our attack outperform other adversarial attacks?
+	\item RQ5: Can our attack be combined with other adversarial attacks to create a more powerful attack?
+\end{itemize}
+
+For all experiments, we report the evasion rate of our attacks, as was done in \{FIXME: citation please!\}. Researchers concerned with generating practical adversarial malware \{FIXME: citation please!\} frequently use Cuckoo Sandbox \{FIXME: citation please!\} to verify the attack did not compromise the functionality of the malware. We verify the malicious functionality was preserved for examples that evade the classifier.
+
+To answer RQ1, we launch white-box attacks against two state of the art raw byte malware classifiers: MalConv2 and MalConvGCG \cite{raff2021classifying}. To answer RQ2, we use the adversarial examples generated from our attack and attempt to evade the EMBER classifier  \cite{anderson2018ember}, a Gaussian Boosted Decision Tree model that uses manually extracted features as opposed to raw bytes. To answer RQ3, we modify the MalConv2, MalConvGCG, and EMBER classifiers to only use features extracted from the code sections of the malware and repeat the experiments from RQ1 and RQ2. 
+
+To answer RQ4, we introduce a second widely used attack, \{FIXME: citation please!\}, and compare its evasion rate against the classification systems introduced in previous experiments. Since this attack primarily modifies the header of an executable and our attack alters the code, we believe that the attacks combined will be more effective than either attack separately. To answer RQ5, we evaluate the combined attack against all our classifiers.
+
+\subsection{Discussion}
+\label{sec:Proposal:Discussion}
+
+There are several aspects of this proposal that are either unexplored or worthy of further consideration:
+\begin{itemize}
+	\item How can we ensure the code generation model produces executable code? Furthermore, how can we ensure the model produces semantically correct code? Can we use unit tests in some way? For example, can we use existing datasets containing source code and corresponding unit tests, then compile-disassemble these datasets to attain assembly level unit-tested code, then leverage this in some sort of pretraining fashion? Alternatively, can we use automatic unit test generation tools like EvoSuit? We could use such tools to ensure generated target code matches the semantics of source code. 
+	\item How can we make the attack work in a single shot? Is there a way we can incrementally modify the source code of the malware while monitoring the classifier's gradients? Alternatively, we could simple use a brute force approach, and repeatedly modify the malware until it deceives the detector. We could produce 100 adversarial examples and report what percentage of them evade the classifier, similar to the codex experiments \cite{chen2021evaluating}.
+	\item When building the corpora, should we experiment with some form of structured segmentation, such as using function identification techniques \cite{shin2015recognizing}? One pass with a single-sized sliding window or multiple passes with sliding windows of multiple sizes? Should we use the sliding window approach at all, or simply use fixed-size chunk segmentation?
+\end{itemize}
+
+\bibliographystyle{./IEEEtran}
+\bibliography{master.bib}
+
+\end{document}
